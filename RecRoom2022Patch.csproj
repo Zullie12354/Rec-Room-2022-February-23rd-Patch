@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>2022RecRoomPatch</AssemblyName>
+    <RootNamespace>_2022RecRoomPatch</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" Exclude="obj\**;bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\net6\MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\net6\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppPhotonRealtime">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\Il2CppPhotonRealtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppRecRoom.Rranticheat.Runtime">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\Il2CppRecRoom.Rranticheat.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppRecNet.Runtime">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\Il2CppRecNet.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppPhoton3Unity3D">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\Il2CppPhoton3Unity3D.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppPhotonUnityNetworking">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\Il2CppPhotonUnityNetworking.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>D:\depots\471711\2022 Febuary 25th\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Auto-obfuscate the Release output in place with BitMono, so a plain `dotnet build -c Release`
+       never ships a readable DLL. Debug builds untouched. Tooling in D:\RecRoomPatchObfuscation.
+       Does NOT patch MelonLoader's verifier — that is a separate per-install step. -->
+  <Target Name="ObfuscateRelease" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <BitMono>D:\RecRoomPatchObfuscation\bitmono\BitMono.CLI.exe</BitMono>
+      <BitMonoCriticals>D:\RecRoomPatchObfuscation\bitmono-criticals.json</BitMonoCriticals>
+      <MLDir>D:\depots\471711\2022 Febuary 25th\MelonLoader</MLDir>
+      <Net6Pack>C:\Program Files\dotnet\shared\Microsoft.NETCore.App\6.0.36</Net6Pack>
+      <ObfTmp>$(TargetDir)obf-tmp</ObfTmp>
+    </PropertyGroup>
+    <RemoveDir Directories="$(ObfTmp)" />
+    <Exec IgnoreExitCode="true"
+          Command="&quot;$(BitMono)&quot; --nologo --no-watermark -f &quot;$(TargetPath)&quot; -o &quot;$(ObfTmp)&quot; -l &quot;$(MLDir)\Il2CppAssemblies&quot; &quot;$(MLDir)\net6&quot; &quot;$(MLDir)\Dependencies\SupportModules&quot; &quot;$(MLDir)\Dependencies&quot; &quot;$(Net6Pack)&quot; -p FullRenamer NoNamespaces StringsEncryption LocalVariableEncoding --criticals-file &quot;$(BitMonoCriticals)&quot;" />
+    <Error Condition="!Exists('$(ObfTmp)\$(TargetFileName)')" Text="BitMono produced no obfuscated output for $(TargetFileName) — Release output left UN-obfuscated. Check BitMono and deps." />
+    <Copy SourceFiles="$(ObfTmp)\$(TargetFileName)" DestinationFiles="$(TargetPath)" OverwriteReadOnlyFiles="true" />
+    <RemoveDir Directories="$(ObfTmp)" />
+    <Message Importance="high" Text="[Obfuscate] $(TargetFileName): Release output obfuscated in place." />
+  </Target>
+
+</Project>
